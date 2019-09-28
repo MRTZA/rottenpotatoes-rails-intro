@@ -12,4 +12,9 @@ module MoviesHelper
       return nil
     end
   end
+
+  # Remembers checked boxes after search
+  def checked(rating)
+    return @checked.include? rating
+  end
 end
