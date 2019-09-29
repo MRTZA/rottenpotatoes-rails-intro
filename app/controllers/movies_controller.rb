@@ -11,10 +11,21 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @sort = params[:sort]
     @all_ratings = Movie.with_ratings
-    params[:ratings].nil? ? @checked = @all_ratings : @checked = params[:ratings].keys
-    @movies = Movie.where(rating: @checked).order(@sort)
+    @sort = params[:sort] || session[:sort]
+
+    # Hardcode ratings to avoid nil array
+    session[:ratings] = session[:ratings] || {'R'=>'', 'PG-13'=>'', 'PG'=>'', 'G'=>''}
+    @checked = params[:ratings] || session[:ratings]
+    session[:sort] = @sort
+    session[:ratings] = @checked
+    @movies = Movie.where(rating: session[:ratings].keys).order(session[:sort])
+
+    # Persist sorting configs across rating filter
+    if (params[:sort].nil? and !(session[:sort].nil?)) || (params[:ratings].nil? and !(session[:ratings].nil?))
+      flash.keep
+      redirect_to movies_path(sort: session[:sort], ratings: session[:ratings])
+    end
   end
 
   def new
